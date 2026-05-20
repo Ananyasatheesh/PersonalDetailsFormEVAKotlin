@@ -22,17 +22,28 @@
             android:hint="Enter Email" />
 
         <EditText
+            android:id="@+id/etAge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Age" />
+
+        <EditText
             android:id="@+id/etPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Enter Phone" />
 
         <Button
-            android:id="@+id/btnPreview"
-            android:layout_width="match_parent"
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Preview"
-            android:layout_marginTop="20dp"/>
+            android:text="Save"/>
+
+        <Button
+            android:id="@+id/btnView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View Details"/>
 
     </LinearLayout>
 
