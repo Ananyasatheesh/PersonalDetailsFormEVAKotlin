@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PersonalDetailsFormKotlin">
         <activity
+            android:name=".ViewActivity"
+            android:exported="false" />
+        <activity
             android:name=".PreviewActivity"
             android:exported="false" />
         <activity
