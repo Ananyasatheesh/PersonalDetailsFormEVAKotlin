@@ -9,17 +9,18 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var etName: EditText
-    lateinit var etAge: EditText
-    lateinit var etEmail: EditText
-    lateinit var etPhone: EditText
+    private lateinit var etName: EditText
+    private lateinit var etAge: EditText
+    private lateinit var etEmail: EditText
+    private lateinit var etPhone: EditText
 
-    lateinit var btnSave: Button
-    lateinit var btnView: Button
+    private lateinit var btnSave: Button
+    private lateinit var btnView: Button
 
-    lateinit var dbHelper: DatabaseHelper
+    private lateinit var dbHelper: DatabaseHelper
 
-    var isEdit = false;
+    private var isEdit = false
+    private var userId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,92 +35,23 @@ class MainActivity : AppCompatActivity() {
 //            insets
 //        }
 
-        etName = findViewById(R.id.etName)
-        etAge = findViewById(R.id.etAge)
-        etEmail = findViewById(R.id.etEmail)
-        etPhone = findViewById(R.id.etPhone)
-
-        btnSave = findViewById(R.id.btnSave)
-        btnView = findViewById(R.id.btnView)
-        isEdit = intent.getBooleanExtra("isEdit", false)
+        initViews()
 
         dbHelper = DatabaseHelper(this)
+
+        isEdit = intent.getBooleanExtra("isEdit", false)
+
         if (isEdit) {
-
-            btnSave.text = "Update"
-
-            etName.setText(
-                intent.getStringExtra("name")
-            )
-
-            etAge.setText(
-                intent.getStringExtra("age")
-            )
-
-            etEmail.setText(
-                intent.getStringExtra("email")
-            )
-
-            etPhone.setText(
-                intent.getStringExtra("phone")
-            )
+            setupEditMode()
         }
 
         btnSave.setOnClickListener {
+
             if (isEdit) {
-                val id = intent.getStringExtra("id")
-                val name = etName.text.toString()
-                val age = etAge.text.toString()
-                val email = etEmail.text.toString()
-                val phone = etPhone.text.toString()
-                val isEdited = dbHelper.updateData(id!!, name!!, age!!, email!!, phone!!)
-                if (isEdited) {
-                    Toast.makeText(this, "Data edited successfully", Toast.LENGTH_SHORT).show()
-                    val intent: Intent = Intent(this, ViewActivity::class.java)
-                    startActivity(intent);
-                    etName.text.clear()
-                    etAge.text.clear()
-                    etEmail.text.clear()
-                    etPhone.text.clear()
-                    btnSave.text = "Save"
-                } else {
-                    Toast.makeText(this, "Failed to edit data", Toast.LENGTH_SHORT).show()
-                }
+                updateData()
             } else {
-
-                val name = etName.text.toString()
-                val age = etAge.text.toString()
-                val email = etEmail.text.toString()
-                val phone = etPhone.text.toString()
-                val isInserted = dbHelper.insertData(
-                    name,
-                    age,
-                    email,
-                    phone
-                )
-
-                if (isInserted) {
-                    Toast.makeText(
-                        this,
-                        "Data Saved Successfully",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    etName.text.clear()
-                    etAge.text.clear()
-                    etEmail.text.clear()
-                    etPhone.text.clear()
-
-                } else {
-
-                    Toast.makeText(
-                        this,
-                        "Failed to Save Data",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+                saveData()
             }
-
         }
 
         btnView.setOnClickListener {
@@ -131,5 +63,124 @@ class MainActivity : AppCompatActivity() {
 
             startActivity(intent)
         }
+    }
+
+    private fun initViews() {
+
+        etName = findViewById(R.id.etName)
+        etAge = findViewById(R.id.etAge)
+        etEmail = findViewById(R.id.etEmail)
+        etPhone = findViewById(R.id.etPhone)
+
+        btnSave = findViewById(R.id.btnSave)
+        btnView = findViewById(R.id.btnView)
+    }
+
+    private fun setupEditMode() {
+
+        btnSave.text = "Update"
+
+        userId = intent.getStringExtra("id").toString()
+
+        etName.setText(
+            intent.getStringExtra("name")
+        )
+
+        etAge.setText(
+            intent.getStringExtra("age")
+        )
+
+        etEmail.setText(
+            intent.getStringExtra("email")
+        )
+
+        etPhone.setText(
+            intent.getStringExtra("phone")
+        )
+    }
+
+    private fun saveData() {
+
+        val name = etName.text.toString().trim()
+        val age = etAge.text.toString().trim()
+        val email = etEmail.text.toString().trim()
+        val phone = etPhone.text.toString().trim()
+
+        val isInserted = dbHelper.insertData(
+            name,
+            age,
+            email,
+            phone
+        )
+
+        if (isInserted) {
+
+            Toast.makeText(
+                this,
+                "Data Saved Successfully",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            clearFields()
+
+        } else {
+
+            Toast.makeText(
+                this,
+                "Failed to Save Data",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun updateData() {
+
+        val name = etName.text.toString().trim()
+        val age = etAge.text.toString().trim()
+        val email = etEmail.text.toString().trim()
+        val phone = etPhone.text.toString().trim()
+
+        val isEdited = dbHelper.updateData(
+            userId,
+            name,
+            age,
+            email,
+            phone
+        )
+
+        if (isEdited) {
+
+            Toast.makeText(
+                this,
+                "Data Edited Successfully",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            clearFields()
+
+            val intent = Intent(
+                this,
+                ViewActivity::class.java
+            )
+
+            startActivity(intent)
+
+            finish()
+
+        } else {
+
+            Toast.makeText(
+                this,
+                "Failed To Edit Data",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun clearFields() {
+        etName.text.clear()
+        etAge.text.clear()
+        etEmail.text.clear()
+        etPhone.text.clear()
     }
 }

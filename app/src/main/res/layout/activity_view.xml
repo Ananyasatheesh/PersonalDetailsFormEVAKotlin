@@ -29,9 +29,9 @@
             android:id="@+id/tableLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="30dp"
-            android:paddingTop="40dp"
-            android:paddingRight="30dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="20dp"
+            android:paddingRight="10dp"
             android:stretchColumns="*">
 
         </TableLayout>
