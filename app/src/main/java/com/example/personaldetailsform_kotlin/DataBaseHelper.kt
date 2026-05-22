@@ -97,4 +97,44 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
             null
         )
     }
+
+    fun updateData(
+        id: String,
+        name: String,
+        age: String,
+        email: String,
+        phone: String
+    ): Boolean {
+
+        val db = writableDatabase
+
+        val values = ContentValues()
+
+        values.put(COL_NAME, name)
+        values.put(COL_AGE, age)
+        values.put(COL_EMAIL, email)
+        values.put(COL_PHONE, phone)
+
+        val result = db.update(
+            TABLE_NAME,
+            values,
+            "$COL_ID=?",
+            arrayOf(id)
+        )
+
+        db.close()
+
+        return result > 0
+    }
+
+    fun deleteData(id: String): Boolean {
+        val db = writableDatabase
+        val result = db.delete(
+            TABLE_NAME,
+            "$COL_ID=?",
+            arrayOf(id)
+        )
+        db.close()
+        return result > 0
+    }
 }

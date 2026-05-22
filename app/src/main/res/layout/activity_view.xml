@@ -2,18 +2,41 @@
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TableLayout
-        android:id="@+id/tableLayout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:stretchColumns="*"
-        android:paddingLeft="30dp"
-        android:paddingRight="30dp"
-        android:paddingTop="40dp">
+        android:orientation="vertical">
 
-    </TableLayout>
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/my_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            app:title="List of details"
+            app:titleTextColor="@color/design_default_color_on_primary"
+            app:navigationIcon="@drawable/back_arrow"
+            android:paddingTop="30dp"
+            android:paddingBottom="10dp"
+            />
+
+        <TableLayout
+            android:id="@+id/tableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="30dp"
+            android:paddingTop="40dp"
+            android:paddingRight="30dp"
+            android:stretchColumns="*">
+
+        </TableLayout>
+
+    </LinearLayout>
+
 
 </ScrollView>
