@@ -2,10 +2,16 @@ package com.example.personaldetailsform_kotlin// MainActivity.kt
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import com.example.personaldetailsform_kotlin.model.Photo
+import com.example.personaldetailsform_kotlin.network.RetrofitInstance
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,24 +22,15 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var btnSave: Button
     private lateinit var btnView: Button
+    private lateinit var btnUpload: Button
 
     private lateinit var dbHelper: DatabaseHelper
-
     private var isEdit = false
     private var userId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        // Not needed as text is separately used instead of using app's title attribute
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainView)) { v, insets ->
-//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-//            v.setPadding(
-//                systemBars.left, 0, systemBars.right, systemBars.bottom
-//            )
-//            insets
-//        }
 
         initViews()
 
@@ -63,6 +60,8 @@ class MainActivity : AppCompatActivity() {
 
             startActivity(intent)
         }
+
+        setEventListenerForUploadImage()
     }
 
     private fun initViews() {
@@ -74,6 +73,7 @@ class MainActivity : AppCompatActivity() {
 
         btnSave = findViewById(R.id.btnSave)
         btnView = findViewById(R.id.btnView)
+        btnUpload = findViewById(R.id.btnUpload)
     }
 
     private fun setupEditMode() {
@@ -182,5 +182,37 @@ class MainActivity : AppCompatActivity() {
         etAge.text.clear()
         etEmail.text.clear()
         etPhone.text.clear()
+    }
+
+    private fun setEventListenerForUploadImage() {
+        btnUpload.setOnClickListener {
+            RetrofitInstance()
+                .api
+                .getPhotos()
+                // here only API call is made (.enqueue)
+                // .enqueue -> executes API call asynchronously
+                .enqueue(
+                    // returns the response as callback
+                    object : Callback<List<Photo>> {
+                        override fun onResponse(
+                            call: Call<List<Photo>>,
+                            response: Response<List<Photo>>
+                        ) {
+                            val response = response.body();
+                            // this@MainActvity refers Activity class. if given this alone it refers callback obj
+                            val galleryIntent = Intent(this@MainActivity, GalleryActivity::class.java)
+                            galleryIntent.putExtra("data", ArrayList(response));
+                            startActivity(galleryIntent)
+                        }
+
+                        override fun onFailure(
+                            call: Call<List<Photo>>,
+                            t: Throwable
+                        ) {
+                            Log.e("API_ERROR", t.message.toString())
+                        }
+                    }
+                )
+        }
     }
 }
