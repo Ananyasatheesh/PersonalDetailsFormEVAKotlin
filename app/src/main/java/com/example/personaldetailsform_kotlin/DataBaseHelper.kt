@@ -14,8 +14,7 @@ import android.database.sqlite.SQLiteOpenHelper
 
 // if version changed -> better to use incremental integer version. if downgrade like 2-> 1 happens onDowngrade() will be called
 //onDowngrade() must be overridden. If not, default onDowngrade() happens and app may crash
-class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDetailsDB", null, 1) {
-
+class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDetailsDB", null, 2) {
 
     // static obj so that it ensures variable is not misspelled
     // if we don't want to use companion object, declare const val NAME = "name" above class
@@ -26,6 +25,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
         const val COL_AGE = "age"
         const val COL_EMAIL = "email"
         const val COL_PHONE = "phone"
+        const val COL_PICTURE = "picture"
     }
 
     // onCreate(), onUpgrade() - Lifecycle methods for SQLitedb by SQLiteOpenHelper
@@ -43,7 +43,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
                 $COL_NAME TEXT,
                 $COL_AGE INTEGER,
                 $COL_EMAIL TEXT,
-                $COL_PHONE TEXT
+                $COL_PHONE TEXT,
+                $COL_PICTURE TEXT
             )
         """.trimIndent()
 
@@ -54,17 +55,28 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
     // if version of table differs onUpgrade() is called
     // here table drops and again table is created, so old data is deleted
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        if(newVersion == 2){
 
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_NAME")
+            val addColQuery = """
+                ALTER TABLE $TABLE_NAME ADD COLUMN $COL_PICTURE TEXT
+                """ .trimIndent()
 
-        onCreate(db)
+            db?.execSQL(addColQuery)
+
+            val updateQuery = """ 
+                UPDATE $TABLE_NAME SET $COL_PICTURE = "https://picsum.photos/id/103/2592/1936"
+            """ .trimIndent()
+
+            db?.execSQL(updateQuery)
+        }
     }
 
     fun insertData(
         name: String,
         age: String,
         email: String,
-        phone: String
+        phone: String,
+        picture: String,
     ): Boolean {
 
         // writableDatabase - opens DB in write mode
@@ -76,6 +88,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
         values.put(COL_AGE, age)
         values.put(COL_EMAIL, email)
         values.put(COL_PHONE, phone)
+        values.put(COL_PICTURE, picture)
 
         val result = db.insert(TABLE_NAME, null, values)
 
@@ -103,7 +116,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
         name: String,
         age: String,
         email: String,
-        phone: String
+        phone: String,
+        picture: String
     ): Boolean {
 
         val db = writableDatabase
@@ -114,6 +128,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
         values.put(COL_AGE, age)
         values.put(COL_EMAIL, email)
         values.put(COL_PHONE, phone)
+        values.put(COL_PICTURE, picture)
 
         val result = db.update(
             TABLE_NAME,

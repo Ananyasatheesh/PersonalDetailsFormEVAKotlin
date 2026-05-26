@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.bumptech.glide.Glide
 
 class ViewActivity : AppCompatActivity() {
 
@@ -44,9 +45,7 @@ class ViewActivity : AppCompatActivity() {
         toolBar = findViewById(R.id.my_toolbar)
         setSupportActionBar(toolBar)
         toolBar.setNavigationOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-
+            finish()
         }
     }
 
@@ -78,6 +77,9 @@ class ViewActivity : AppCompatActivity() {
                     cursor.getColumnIndexOrThrow(DatabaseHelper.COL_PHONE)
                 )
 
+                val picture = cursor.getString(
+                    cursor.getColumnIndexOrThrow(DatabaseHelper.COL_PICTURE)
+                )
                 val tableRow = TableRow(this)
 
                 tableRow.addView(createTextView(id))
@@ -85,7 +87,9 @@ class ViewActivity : AppCompatActivity() {
                 tableRow.addView(createTextView(age))
                 tableRow.addView(createTextView(email))
                 tableRow.addView(createTextView(phone))
-                tableRow.addView(createActionButton(id, name, age, email, phone))
+                tableRow.addView(createImageView(picture), TableRow.LayoutParams(85,90))
+
+                tableRow.addView(createActionButton(id, name, age, email, phone, picture))
 
                 tableLayout.addView(tableRow)
 
@@ -108,8 +112,21 @@ class ViewActivity : AppCompatActivity() {
         return textView
     }
 
+    private fun createImageView(picture: String): ImageView {
+
+        val imageView = ImageView(this)
+
+        imageView.scaleType = ImageView.ScaleType.CENTER_CROP
+
+        Glide.with(this)
+            .load(picture)
+            .into(imageView)
+
+        return imageView
+    }
+
     private fun createActionButton(
-        id: String, name: String, age: String, email: String, phone: String
+        id: String, name: String, age: String, email: String, phone: String, picture: String
     ): ImageView {
 
         val btnAction = ImageView(this)
@@ -127,14 +144,20 @@ class ViewActivity : AppCompatActivity() {
         )
 
         btnAction.setOnClickListener {
-            showPopupMenu(btnAction, id, name, age, email, phone)
+            showPopupMenu(btnAction, id, name, age, email, phone, picture)
         }
 
         return btnAction
     }
 
     private fun showPopupMenu(
-        btnAction: ImageView, id: String, name: String, age: String, email: String, phone: String
+        btnAction: ImageView,
+        id: String,
+        name: String,
+        age: String,
+        email: String,
+        phone: String,
+        picture: String
     ) {
 
         val popupMenu = PopupMenu(
@@ -155,6 +178,7 @@ class ViewActivity : AppCompatActivity() {
                     intent.putExtra("age", age)
                     intent.putExtra("email", email)
                     intent.putExtra("phone", phone)
+                    intent.putExtra("picture", picture)
 
                     intent.putExtra("isEdit", true)
 

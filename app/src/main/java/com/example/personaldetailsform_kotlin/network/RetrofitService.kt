@@ -4,7 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class RetrofitInstance {
-    val api = Retrofit
+    val api: ApiService = Retrofit
         // starts to build Retrofit configs
             .Builder()
         // all APIs must start with this base URL

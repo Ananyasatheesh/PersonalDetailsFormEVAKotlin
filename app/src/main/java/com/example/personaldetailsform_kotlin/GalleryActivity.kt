@@ -26,7 +26,7 @@ class GalleryActivity : AppCompatActivity() {
         recyclerView.layoutManager = GridLayoutManager(this, 3)
 
         // adapter -> create view and bind data to the view
-        recyclerView.adapter = PhotoAdapter(photoList)
+        recyclerView.adapter = PhotoAdapter(this, photoList)
 
         toolBar = findViewById(R.id.galleryToolbar)
         setSupportActionBar(toolBar)
