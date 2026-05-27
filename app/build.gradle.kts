@@ -41,14 +41,6 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
-    // Retrofit
-    implementation(libs.retrofit)
-    // Retrofit with Scalar Converter - Converts JSON to String
-    implementation(libs.retrofit.scalars)
-    // Retrofit with Gson Converter - Converts JSON to GSON
-    implementation(libs.converter.gson)
-    // Glide -> Loads image with URL
-    implementation(libs.glide)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

@@ -9,8 +9,8 @@ import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.example.personaldetailsform_kotlin.model.Photo
+import com.example.personaldetailsform_kotlin.network.ImageLoader
 
 
 // Recyclerview
@@ -40,10 +40,7 @@ class PhotoAdapter(private val activity: Activity, private val photoList: ArrayL
     }
 
     override fun onBindViewHolder( holder: PhotoViewHolder, position: Int) {
-        // Glide -> Library used to load images from URL easily
-        Glide.with(holder.itemView.context)
-            .load(photoList[position].download_url)
-            .into(holder.imageView)
+        ImageLoader.loadImage(photoList[position].download_url, holder.imageView)
 
         val currentItem = photoList[position]
 

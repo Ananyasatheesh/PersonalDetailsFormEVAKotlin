@@ -10,12 +10,11 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import com.example.personaldetailsform_kotlin.model.Photo
-import com.example.personaldetailsform_kotlin.network.RetrofitInstance
+import com.example.personaldetailsform_kotlin.network.ImageLoader
+import org.json.JSONArray
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 
 class MainActivity : AppCompatActivity() {
 
@@ -56,9 +55,7 @@ class MainActivity : AppCompatActivity() {
 
                     ivPicture.visibility = View.VISIBLE
 
-                    Glide.with(this)
-                        .load(downloadUrl)
-                        .into(ivPicture)
+                    ImageLoader.loadImage(downloadUrl!!, ivPicture)
 
                 } else {
                     ivPicture.visibility = View.GONE
@@ -142,10 +139,7 @@ class MainActivity : AppCompatActivity() {
         ivPicture.visibility = View.VISIBLE
         downloadUrl = intent.getStringExtra("picture")
 
-        Glide
-            .with(this)
-            .load(intent.getStringExtra("picture"))
-            .into(ivPicture)
+        ImageLoader.loadImage(downloadUrl!!, ivPicture)
     }
 
     private fun saveData() {
@@ -240,40 +234,72 @@ class MainActivity : AppCompatActivity() {
 
     private fun setEventListenerForUploadImage() {
         btnUpload.setOnClickListener {
-            RetrofitInstance()
-                .api
-                .getPhotos()
-                // here only API call is made (.enqueue)
-                // .enqueue -> executes API call asynchronously
-                .enqueue(
-                    // returns the response as callback
-                    object : Callback<List<Photo>> {
-                        override fun onResponse(
-                            call: Call<List<Photo>>,
-                            response: Response<List<Photo>>
-                        ) {
 
-                            val response = response.body()
+            Thread{
 
-                            // this@MainActvity refers Activity class. if given this alone it refers callback obj
-                            val galleryIntent =
-                                Intent(this@MainActivity, GalleryActivity::class.java)
+                // converts string into proper URL. separating domain, headers etc.,
+                val url = URL("https://picsum.photos/v2/list")
 
-                            galleryIntent.putExtra("data", ArrayList(response))
+                // open connections to server.
+                // openConnection() -> gives basic connection like inputStream etc.,
+                // casting as HttpsURLConnection -> so that basic https methods are available.
+                // Like this we have HttpUrlConnection, FtpUrlConnection etc.,
+                val connection = url.openConnection() as HttpsURLConnection
 
-                            // Executes an ActivityResultContract given the required input.
-                            // (launched 2nd activity with activity result)
-                            galleryLauncher.launch(galleryIntent)
-                        }
+                // internally hits API.
+                // above steps just opens the connection
+                // as we need responseCode, checks whether do we've data, if not API is hit
+                // * explicit trigger - connection.connect()
+                // * implicit trigger -
+                //         connection.responseCode (Checking the status)
+                //         connection.getInputStream() (Reading the body)
+                //         connection.headerFields (Reading headers)
+                val responseCode = connection.responseCode
 
-                        override fun onFailure(
-                            call: Call<List<Photo>>,
-                            t: Throwable
-                        ) {
-                            Log.e("API_ERROR", t.message.toString())
-                        }
+                connection.requestMethod = "GET"
+
+                if (responseCode == 200){
+
+                    // server sends data as chunks in streams
+                    val inputStream = connection.getInputStream()
+
+                    // the chunk of data are available as bytes.
+                    // BufferedReader -> Converts many character of bytes into texts
+                    // readText() -> Used to read the converted text as whole string
+                    val response = inputStream.bufferedReader().readText()
+
+                    // received response is an array of objects in string
+                    // JSONArray() converts string of array into orignal array
+                    val jsonArray = JSONArray(response)
+
+                    val photoList = ArrayList<Photo>()
+
+                    for (i in 0 until jsonArray.length()){
+
+                        // getJSONObject -> converts string of objects in array to original objects
+                        val jsonObject = jsonArray.getJSONObject(i)
+
+                        val id = jsonObject.getString("id")
+
+                        val author = jsonObject.getString("author")
+
+                        val download_url = jsonObject.getString("download_url")
+
+                        val photo = Photo(id, author, download_url)
+
+                        photoList.add(photo)
                     }
-                )
+
+                    val galleryIntent = Intent(this@MainActivity, GalleryActivity::class.java)
+
+                    galleryIntent.putExtra("data", ArrayList(photoList))
+
+                    // Executes an ActivityResultContract given the required input.
+                    // (launched 2nd activity with activity result)
+                    galleryLauncher.launch(galleryIntent)
+
+                }
+            }.start()
         }
     }
 }

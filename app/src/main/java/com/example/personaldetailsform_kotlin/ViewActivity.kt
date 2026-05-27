@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.bumptech.glide.Glide
+import com.example.personaldetailsform_kotlin.network.ImageLoader
 
 class ViewActivity : AppCompatActivity() {
 
@@ -118,9 +118,7 @@ class ViewActivity : AppCompatActivity() {
 
         imageView.scaleType = ImageView.ScaleType.CENTER_CROP
 
-        Glide.with(this)
-            .load(picture)
-            .into(imageView)
+        ImageLoader.loadImage(picture, imageView)
 
         return imageView
     }
