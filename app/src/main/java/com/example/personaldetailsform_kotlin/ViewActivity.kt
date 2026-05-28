@@ -144,7 +144,16 @@ class ViewActivity : AppCompatActivity() {
         )
 
         btnAction.setOnClickListener {
-            showPopupMenu(btnAction, id, name, age, email, phone, picture)
+            val bottomSheet = BottomSheetFragment(
+                name,
+                email
+            )
+
+            bottomSheet.show(
+                supportFragmentManager,
+                "BottomSheet"
+            )
+//            showPopupMenu(btnAction, id, name, age, email, phone, picture)
         }
 
         return btnAction

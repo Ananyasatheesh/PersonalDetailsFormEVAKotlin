@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.converter.gson)
     // Glide -> Loads image with URL
     implementation(libs.glide)
+    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
