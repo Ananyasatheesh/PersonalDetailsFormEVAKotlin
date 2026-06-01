@@ -49,6 +49,10 @@ dependencies {
     implementation(libs.converter.gson)
     // Glide -> Loads image with URL
     implementation(libs.glide)
+    // datastore preference
+    implementation(libs.androidx.datastore.preferences)
+    // encrypted shared preference
+    implementation(libs.androidx.security.crypto)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

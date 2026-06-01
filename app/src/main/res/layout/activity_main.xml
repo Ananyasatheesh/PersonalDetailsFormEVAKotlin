@@ -81,6 +81,38 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="View Details" />
+
+            <Button
+                android:id="@+id/btnDownload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Download Details" />
+
+            <Button
+                android:id="@+id/btnSavePreference"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Save Preference"/>
+
+            <Button
+                android:id="@+id/btnReadPreference"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Read Preference"/>
+
+            <Button
+                android:id="@+id/btnSavePreferenceDS"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Save Preference - DataStore"/>
+
+            <Button
+                android:id="@+id/btnReadPreferenceDS"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Read Preference - DataStore"/>
+
+
         </LinearLayout>
     </LinearLayout>
 

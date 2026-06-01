@@ -1,7 +1,10 @@
 package com.example.personaldetailsform_kotlin// MainActivity.kt
 
+import android.content.ContentValues
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -9,6 +12,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import retrofit2.Call
@@ -16,9 +20,18 @@ import retrofit2.Callback
 import retrofit2.Response
 import com.example.personaldetailsform_kotlin.model.Photo
 import com.example.personaldetailsform_kotlin.network.RetrofitInstance
+import androidx.core.content.edit
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
+
+private val android.content.Context.dataStore by preferencesDataStore( name = "settingsDataStore")
 class MainActivity : AppCompatActivity() {
-
+    private val USER_EMAIL = stringPreferencesKey( "user_email")
     private lateinit var etName: EditText
     private lateinit var etAge: EditText
     private lateinit var etEmail: EditText
@@ -28,11 +41,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnSave: Button
     private lateinit var btnView: Button
     private lateinit var btnUpload: Button
+    private lateinit var btnDownload: Button
+    private lateinit var btnSavePreferenceDS: Button
+    private lateinit var btnReadPreferenceDS: Button
 
     private lateinit var dbHelper: DatabaseHelper
     private var isEdit = false
     private var userId: String = ""
     private var downloadUrl: String? = null
+    private lateinit var btnSavePreference: Button
+    private lateinit var btnReadPreference: Button
 
     // Launcher is registered to get result from 2nd activity to 1st activity wnd resume 1st activity
     // separate launcher can be used to get results from various diff activities
@@ -66,6 +84,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -81,6 +100,12 @@ class MainActivity : AppCompatActivity() {
         if (isEdit) {
             setupEditMode()
         }
+
+        val sharedPreferences =
+            getSharedPreferences(
+                "settings",
+                MODE_PRIVATE
+            )
 
         btnSave.setOnClickListener {
 
@@ -102,6 +127,83 @@ class MainActivity : AppCompatActivity() {
         }
 
         setEventListenerForUploadImage()
+
+        btnDownload.setOnClickListener {
+
+            exportToDownloads()
+        }
+
+        btnSavePreference.setOnClickListener {
+
+            sharedPreferences
+                .edit {
+                    putString(
+                        "user_name",
+                        etName.text.toString()
+                    )
+                }
+
+            Toast.makeText(
+                this,
+                "Saved to SharedPreferences",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        btnReadPreference.setOnClickListener {
+
+            val name =
+                sharedPreferences.getString(
+                    "user_name",
+                    "Not Found"
+                )
+
+            Toast.makeText(
+                this,
+                name,
+                Toast.LENGTH_SHORT
+            ).show()
+
+            Log.d(
+                "SHARED_PREF",
+                name.toString()
+            )
+        }
+
+        btnSavePreferenceDS.setOnClickListener {
+
+            lifecycleScope.launch {
+
+                dataStore.edit {
+
+                    it[USER_EMAIL] = etEmail.text.toString()
+                }
+            }
+        }
+
+        btnReadPreferenceDS.setOnClickListener {
+
+            lifecycleScope.launch {
+
+                dataStore.data.collect { prefs ->
+
+                    val name =
+                        prefs[USER_EMAIL]
+
+                    Toast.makeText(
+                        this@MainActivity,
+                        name,
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    Log.d(
+                        "SHARED_PREF_DS",
+                        name.toString()
+                    )
+                    cancel()
+                }
+            }
+        }
     }
 
     private fun initViews() {
@@ -115,6 +217,11 @@ class MainActivity : AppCompatActivity() {
         btnSave = findViewById(R.id.btnSave)
         btnView = findViewById(R.id.btnView)
         btnUpload = findViewById(R.id.btnUpload)
+        btnDownload = findViewById(R.id.btnDownload)
+        btnSavePreference = findViewById(R.id.btnSavePreference)
+        btnReadPreference = findViewById(R.id.btnReadPreference)
+        btnSavePreferenceDS = findViewById(R.id.btnSavePreferenceDS)
+        btnReadPreferenceDS = findViewById(R.id.btnReadPreferenceDS)
     }
 
     private fun setupEditMode() {
@@ -276,4 +383,82 @@ class MainActivity : AppCompatActivity() {
                 )
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun exportToDownloads() {
+
+        val cursor = dbHelper.getAllData()
+
+        val content = buildString {
+
+            while (cursor.moveToNext()) {
+
+                appendLine("Name: ${cursor.getString(1)}")
+                appendLine("Age: ${cursor.getInt(2)}")
+                appendLine("Email: ${cursor.getString(3)}")
+                appendLine("Phone: ${cursor.getString(4)}")
+                appendLine("Picture: ${cursor.getString(5)}")
+                appendLine("--------------------------------")
+            }
+        }
+
+        cursor.close()
+
+        // apply() -> Create an object, configure it, and gives back the same object.
+        val values = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, "my_details.txt")
+            put(MediaStore.Downloads.MIME_TYPE, "text/plain")
+        }
+
+        // contentResolver -> Resolves the request for that respective contentProvider
+        // contentProvider -> MediaStore (access to pictures, videos, downloads etc.,), ContactsContract (access to contacts)
+        // insert -> take the respective content provider, metadata (values) and insert in the place.
+        // returns the URI -> unique path for that file
+        // this is done to give our app the access to only that particular URI. Not to all files (Scoped storage)
+        // URI - All file types. So it tells, go to item 22 in downloads it maybe file/ photo/ contact
+        // A file path tells you where the file is. A URI tells Android which item you want. Android then decides where it is and whether you're allowed to access it.
+        val uri = contentResolver.insert(
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+            values
+        )
+
+        uri?.let {
+            contentResolver.openOutputStream(it)?.use { output ->
+                output.write(content.toByteArray())
+            }
+
+            Toast.makeText(
+                this,
+                "Saved to Downloads",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 }
+
+
+// Shared preferences -
+// * XML file, for small data more code is there.
+// * If app crashes while this is being executed, XML file breaks.
+// Read text -> Parse XML -> Create objects
+// Start writing XML if App crashes -> Corrupted file
+// So that datastore is written (async way of executing code)
+
+// Data Store
+// * .pb - Protocol bundle - Google's binary serialization
+// Read binary -> Decode
+// Write temp file -> Success? -> Replace old file (new data), else -> old data
+
+
+// Coroutine
+// A function used to run a task asynchronously
+// Doesn't block main thread. Waits until task completes -> other UI works are allowed -> resumes when task completed
+// CoRoutineScope -> Decides where the coroutine must run.
+//   * lifecycleScope.launch -> creates a scope within activity's lifecycle
+// Activity Created -> Coroutine Running -> Activity Destroyed -> Coroutine Canceled
+//   * viewLifecycleOwner.lifecycleScope -> creates a scope within fragment's lifecycle
+// A Fragment can survive after its View is destroyed. coroutine destroys when fragments view is being destroyed (onDestroyView())
+//   * viewModelScope -> created with viewModel
+// Activity Rotation -> Activity recreated -> ViewModel survives -> Coroutine survives
+//   * GlobalScope.launch -> coroutine deleted only when component is destroyed
+// A coroutine internally stores a continuation (its execution state, local variables, current position, dispatcher, and job status).
