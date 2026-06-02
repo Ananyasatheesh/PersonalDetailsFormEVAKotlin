@@ -72,6 +72,13 @@ class MainActivity : AppCompatActivity() {
 
         initViews()
 
+        // Build Config
+        if (!BuildConfig.ENABLE_IMAGE_UPLOAD) {
+
+            btnUpload.visibility = View.GONE
+            ivPicture.visibility = View.GONE
+        }
+
         dbHelper = DatabaseHelper(this)
 
         isEdit = intent.getBooleanExtra("isEdit", false)
@@ -139,13 +146,15 @@ class MainActivity : AppCompatActivity() {
             intent.getStringExtra("phone")
         )
 
-        ivPicture.visibility = View.VISIBLE
-        downloadUrl = intent.getStringExtra("picture")
+        if (BuildConfig.ENABLE_IMAGE_UPLOAD) {
+            ivPicture.visibility = View.VISIBLE
+            downloadUrl = intent.getStringExtra("picture")
 
-        Glide
-            .with(this)
-            .load(intent.getStringExtra("picture"))
-            .into(ivPicture)
+            Glide
+                .with(this)
+                .load(intent.getStringExtra("picture"))
+                .into(ivPicture)
+        }
     }
 
     private fun saveData() {
@@ -154,7 +163,11 @@ class MainActivity : AppCompatActivity() {
         val age = etAge.text.toString().trim()
         val email = etEmail.text.toString().trim()
         val phone = etPhone.text.toString().trim()
-        val picture = downloadUrl.toString().trim()
+        val picture =
+            if (BuildConfig.ENABLE_IMAGE_UPLOAD)
+                downloadUrl.orEmpty()
+            else
+                ""
 
         val isInserted = dbHelper.insertData(
             name,

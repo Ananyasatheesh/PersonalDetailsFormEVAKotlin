@@ -10,6 +10,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 // SQLiteOpenHelper - performs operations in DB (Creating db, Updates, Read, checks DB, open files etc.,)
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 
 
 // if version changed -> better to use incremental integer version. if downgrade like 2-> 1 happens onDowngrade() will be called
@@ -92,6 +93,14 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
 
         val result = db.insert(TABLE_NAME, null, values)
 
+        if (BuildConfig.DEBUG) {
+
+            Log.d(
+                "FORM",
+                "Saving User in DB"
+            )
+        }
+
         db.close()
 
         // L -> Long datatype,
@@ -105,10 +114,20 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
         // readableDatabase - opens DB in read mode
         val db = readableDatabase
 
-        return db.rawQuery(
+
+        val result = db.rawQuery(
             "SELECT * FROM $TABLE_NAME",
             null
         )
+        if (BuildConfig.DEBUG) {
+
+            Log.d(
+                "FORM",
+                "User data retrieval successful"
+            )
+        }
+
+        return result
     }
 
     fun updateData(
@@ -138,6 +157,14 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "PersonalDeta
         )
 
         db.close()
+
+        if (BuildConfig.DEBUG && result > 0) {
+
+            Log.d(
+                "FORM",
+                "Data updation successful"
+            )
+        }
 
         return result > 0
     }

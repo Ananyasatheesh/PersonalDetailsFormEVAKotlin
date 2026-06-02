@@ -13,6 +13,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
+import com.example.personaldetailsform_kotlin.repository.MockDataRepository
 
 class ViewActivity : AppCompatActivity() {
 
@@ -51,6 +52,81 @@ class ViewActivity : AppCompatActivity() {
 
     private fun loadTableData() {
 
+        if (BuildConfig.USE_MOCK_DATA) {
+
+            loadMockData()
+
+        } else {
+
+            loadDatabaseData()
+
+        }
+    }
+
+    private fun loadMockData() {
+
+        val users = MockDataRepository.getUsers()
+
+        users.forEach { user ->
+
+            val tableRow = TableRow(this)
+
+            tableRow.addView(createTextView(""))
+            tableRow.addView(createTextView(user.name))
+            tableRow.addView(createTextView(user.age.toString()))
+            tableRow.addView(createTextView(user.email))
+            tableRow.addView(createTextView(user.phone))
+
+            if (BuildConfig.ENABLE_IMAGE_UPLOAD) {
+
+                tableRow.addView(
+                    createImageView(user.photo),
+                    TableRow.LayoutParams(85, 90)
+                )
+            }
+
+            tableRow.addView(
+                createMockActionButton(user.name)
+            )
+
+            tableLayout.addView(tableRow)
+        }
+    }
+
+    // Mock data dummy Action
+    private fun createMockActionButton(
+        name: String
+    ): ImageView {
+
+        val btnAction = ImageView(this)
+
+        btnAction.layoutParams = TableRow.LayoutParams(
+            80,
+            85
+        )
+
+        btnAction.setImageResource(
+            R.drawable.baseline_more_vert_24
+        )
+
+        btnAction.setBackgroundResource(
+            R.drawable.table_border
+        )
+
+        btnAction.setOnClickListener {
+
+            Toast.makeText(
+                this,
+                "Mock User: $name",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        return btnAction
+    }
+
+    private fun loadDatabaseData() {
+
         val cursor = dbHelper.getAllData()
 
         if (cursor.moveToFirst()) {
@@ -80,6 +156,7 @@ class ViewActivity : AppCompatActivity() {
                 val picture = cursor.getString(
                     cursor.getColumnIndexOrThrow(DatabaseHelper.COL_PICTURE)
                 )
+
                 val tableRow = TableRow(this)
 
                 tableRow.addView(createTextView(id))
@@ -87,9 +164,25 @@ class ViewActivity : AppCompatActivity() {
                 tableRow.addView(createTextView(age))
                 tableRow.addView(createTextView(email))
                 tableRow.addView(createTextView(phone))
-                tableRow.addView(createImageView(picture), TableRow.LayoutParams(85,90))
 
-                tableRow.addView(createActionButton(id, name, age, email, phone, picture))
+                if (BuildConfig.ENABLE_IMAGE_UPLOAD) {
+
+                    tableRow.addView(
+                        createImageView(picture),
+                        TableRow.LayoutParams(85, 90)
+                    )
+                }
+
+                tableRow.addView(
+                    createActionButton(
+                        id,
+                        name,
+                        age,
+                        email,
+                        phone,
+                        picture
+                    )
+                )
 
                 tableLayout.addView(tableRow)
 
